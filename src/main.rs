@@ -50,6 +50,7 @@ fn main() {
     let black = sdl2::pixels::Color::RGB(0, 0, 0);
     let white = sdl2::pixels::Color::RGB(255, 255, 255);
     let gray = sdl2::pixels::Color::RGB(128, 128, 128);
+    let dark_gray = sdl2::pixels::Color::RGB(78, 78, 78);
 
     let mut main_loop = || {
         // events
@@ -100,8 +101,9 @@ fn main() {
         // flip colours if thing is inside the target
         let mut inside = false;
 
-        if target.x <= thing.x && target.w + target.x >= thing.x &&
-            target.y <= thing.y && target.h + target.y >= thing.y
+        if target.x <= thing.x && target.w + target.x >= thing.x + thing.w &&
+            target.y <= thing.y &&
+            target.h + target.y >= thing.y + thing.h
         {
             inside = true;
         }
@@ -111,7 +113,11 @@ fn main() {
         let _ = renderer.clear();
 
         // draw game board
-        let _ = renderer.set_draw_color(gray);
+        if inside == true {
+            let _ = renderer.set_draw_color(dark_gray);
+        } else {
+            let _ = renderer.set_draw_color(gray);
+        }
         let _ = renderer.fill_rect(board);
 
         // draw target
