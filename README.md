@@ -1,5 +1,6 @@
 # Flipper
-Simple SDL2 based rust game.
+Simple [SDL2](https://www.libsdl.org/) based game written in
+[Rust](https://www.rust-lang.org/) programming language.
 
 This is just a pet project to learn Rust programming language.
 

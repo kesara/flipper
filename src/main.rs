@@ -100,8 +100,8 @@ fn main() {
         // flip colours if thing is inside the target
         let mut inside = false;
 
-        if target.x <= thing.x && target.w + target.x >= thing.x && target.y <= thing.y &&
-            target.h + target.y >= thing.y
+        if target.x <= thing.x && target.w + target.x >= thing.x &&
+            target.y <= thing.y && target.h + target.y >= thing.y
         {
             inside = true;
         }
