@@ -1,0 +1,9 @@
+[package]
+name = "flipper"
+version = "0.1.0"
+authors = ["Kesara Rathnayake <kesara@fq.nz>"]
+license = "GPL-3.0"
+
+[dependencies]
+sdl2 = "0.30"
+rand = "0.3"
