@@ -1,12 +1,16 @@
 extern crate rand;
 extern crate sdl2;
 
+mod audio_waves;
+
 use rand::{thread_rng, Rng};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::log;
 use sdl2::rect::Rect;
 use std::process;
+use std::time::Duration;
+use audio_waves::waves;
 
 fn main() {
     log::log("Starting flipper");
@@ -21,6 +25,7 @@ fn main() {
     // SDL context
     let sdl_context = sdl2::init().unwrap();
     let video = sdl_context.video().unwrap();
+    let audio = sdl_context.audio().unwrap();
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     // main window
@@ -38,6 +43,51 @@ fn main() {
         Ok(renderer) => renderer,
         Err(err) => panic!("Failed to create renderer {}", err),
     };
+
+    // audio
+    let spec_vertical = waves::get_audio_spec(44100);
+    let spec_horizontal = waves::get_audio_spec(43100);
+
+    let playback_left = audio
+        .open_playback(None, &spec_horizontal, |spec| {
+            waves::SquareWave {
+                phase_inc: 180.0 / spec.freq as f32,
+                phase: 0.0,
+                volume: 0.25,
+            }
+        })
+        .unwrap();
+
+    let playback_right = audio
+        .open_playback(None, &spec_horizontal, |spec| {
+            waves::SquareWave {
+                phase_inc: 220.0 / spec.freq as f32,
+                phase: 0.0,
+                volume: 0.25,
+            }
+        })
+        .unwrap();
+
+    let playback_up = audio
+        .open_playback(None, &spec_vertical, |spec| {
+            waves::SquareWave {
+                phase_inc: 260.0 / spec.freq as f32,
+                phase: 0.0,
+                volume: 0.25,
+            }
+        })
+        .unwrap();
+
+    let playback_down = audio
+        .open_playback(None, &spec_vertical, |spec| {
+            waves::SquareWave {
+                phase_inc: 160.0 / spec.freq as f32,
+                phase: 0.0,
+                volume: 0.25,
+            }
+        })
+        .unwrap();
+
 
     // moving thing
     let mut thing = Rect::new(10, 10, 10, 10);
@@ -73,6 +123,10 @@ fn main() {
                     if thing.x < 10 {
                         thing.x = 0;
                     }
+                    // play sound
+                    playback_left.resume();
+                    std::thread::sleep(Duration::from_millis(200));
+                    playback_left.pause();
                 }
                 Event::KeyDown { keycode: Some(Keycode::Right), .. } |
                 Event::KeyDown { keycode: Some(Keycode::L), .. } => {
@@ -81,6 +135,10 @@ fn main() {
                     if thing.x >= width {
                         thing.x = width - 10;
                     }
+                    // play sound
+                    playback_right.resume();
+                    std::thread::sleep(Duration::from_millis(200));
+                    playback_right.pause();
                 }
                 Event::KeyDown { keycode: Some(Keycode::Up), .. } |
                 Event::KeyDown { keycode: Some(Keycode::K), .. } => {
@@ -89,6 +147,10 @@ fn main() {
                     if thing.y < 0 {
                         thing.y = 0;
                     }
+                    // play sound
+                    playback_up.resume();
+                    std::thread::sleep(Duration::from_millis(200));
+                    playback_up.pause();
                 }
                 Event::KeyDown { keycode: Some(Keycode::Down), .. } |
                 Event::KeyDown { keycode: Some(Keycode::J), .. } => {
@@ -97,6 +159,10 @@ fn main() {
                     if thing.y >= height {
                         thing.y = height - 10;
                     }
+                    // play sound
+                    playback_down.resume();
+                    std::thread::sleep(Duration::from_millis(200));
+                    playback_down.pause();
                 }
                 Event::KeyDown { .. } => {
                     // change target if any other key is pressed
