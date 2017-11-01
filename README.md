@@ -5,8 +5,10 @@ Simple [SDL2](https://www.libsdl.org/) based game written in
 This is just a pet project to learn Rust programming language.
 
 ## How to play
-* Use arrow keys to move.
-* Use Escape key to quit.
+* Use <kbd>&leftarrow;</kbd> <kbd>&downarrow;</kbd> <kbd>&uparrow;</kbd>
+<kbd>&rightarrow;</kbd> or <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd>
+to move.
+* Use <kbd>Esc</kbd> or <kbd>Q</kbd> to quit.
 * Press any other key to move the target.
 
 ## License

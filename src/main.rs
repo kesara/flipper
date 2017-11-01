@@ -57,32 +57,37 @@ fn main() {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. } |
+                Event::KeyDown { keycode: Some(Keycode::Q), .. } => {
                     // quit
                     process::exit(1);
                 }
-                Event::KeyDown { keycode: Some(Keycode::Left), .. } => {
+                Event::KeyDown { keycode: Some(Keycode::Left), .. } |
+                Event::KeyDown { keycode: Some(Keycode::H), .. } => {
                     // move thing left
                     thing.x -= 10;
                     if thing.x < 10 {
                         thing.x = 0;
                     }
                 }
-                Event::KeyDown { keycode: Some(Keycode::Right), .. } => {
+                Event::KeyDown { keycode: Some(Keycode::Right), .. } |
+                Event::KeyDown { keycode: Some(Keycode::L), .. } => {
                     // move thing right
                     thing.x += 10;
                     if thing.x >= width {
                         thing.x = width - 10;
                     }
                 }
-                Event::KeyDown { keycode: Some(Keycode::Up), .. } => {
+                Event::KeyDown { keycode: Some(Keycode::Up), .. } |
+                Event::KeyDown { keycode: Some(Keycode::K), .. } => {
                     // move thing up
                     thing.y -= 10;
                     if thing.y < 0 {
                         thing.y = 0;
                     }
                 }
-                Event::KeyDown { keycode: Some(Keycode::Down), .. } => {
+                Event::KeyDown { keycode: Some(Keycode::Down), .. } |
+                Event::KeyDown { keycode: Some(Keycode::J), .. } => {
                     // move thing down
                     thing.y += 10;
                     if thing.y >= height {
