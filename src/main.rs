@@ -2,12 +2,15 @@ extern crate rand;
 extern crate sdl2;
 
 use rand::{thread_rng, Rng};
-use sdl2::rect::Rect;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::log;
+use sdl2::rect::Rect;
 use std::process;
 
 fn main() {
+    log::log("Starting flipper");
+
     // boundaries
     let height: i32 = 480;
     let width: i32 = 640;
@@ -60,6 +63,7 @@ fn main() {
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } |
                 Event::KeyDown { keycode: Some(Keycode::Q), .. } => {
                     // quit
+                    log::log("Exiting flipper");
                     process::exit(1);
                 }
                 Event::KeyDown { keycode: Some(Keycode::Left), .. } |
