@@ -47,6 +47,7 @@ fn main() {
     // audio
     let spec_vertical = waves::get_audio_spec(44100);
     let spec_horizontal = waves::get_audio_spec(43100);
+    let spec_white_noise = waves::get_audio_spec(42100);
 
     let playback_left = audio
         .open_playback(None, &spec_horizontal, |spec| {
@@ -88,6 +89,14 @@ fn main() {
         })
         .unwrap();
 
+    // play white noice
+    let playback_white_noise = audio
+        .open_playback(
+            None,
+            &spec_white_noise,
+            |_| waves::WhiteNoise { volume: 2.0 },
+        )
+        .unwrap();
 
     // moving thing
     let mut thing = Rect::new(10, 10, 10, 10);
@@ -190,8 +199,12 @@ fn main() {
         // draw game board
         if inside == true {
             let _ = renderer.set_draw_color(dark_gray);
+            // play white noise
+            playback_white_noise.resume();
         } else {
             let _ = renderer.set_draw_color(gray);
+            // pasue white noise
+            playback_white_noise.pause();
         }
         let _ = renderer.fill_rect(board);
 
