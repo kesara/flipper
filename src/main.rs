@@ -3,14 +3,48 @@ extern crate sdl2;
 
 mod audio_waves;
 
-use rand::{thread_rng, Rng};
+use rand::{random, thread_rng, Rng};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::log;
-use sdl2::rect::Rect;
+use sdl2::rect::{Point, Rect};
 use std::process;
 use std::time::Duration;
 use audio_waves::waves;
+
+fn next_move(
+    current: Point,
+    height: i32,
+    width: i32,
+    movement: i32,
+    size: i32,
+) -> Point {
+    let mut x: i32;
+    let mut y: i32;
+    if random() {
+        x = current.x + movement;
+        if x >= width {
+            x = width - size;
+        }
+    } else {
+        x = current.x - movement;
+        if x < 0 {
+            x = 0
+        }
+    }
+    if random() {
+        y = current.y + movement;
+        if y >= height {
+            y = height - size;
+        }
+    } else {
+        y = current.y - movement;
+        if y < 0 {
+            y = 0
+        }
+    }
+    return Point::new(x, y);
+}
 
 fn main() {
     log::log("Starting flipper");
@@ -30,7 +64,7 @@ fn main() {
 
     // main window
     let window = match video
-        .window("Colours", width as u32, height as u32)
+        .window("Flipper", width as u32, height as u32)
         .position_centered()
         .opengl()
         .build() {
@@ -100,6 +134,13 @@ fn main() {
 
     // moving thing
     let mut thing = Rect::new(10, 10, 10, 10);
+
+    // opponent
+    let opponent_x: i32 = rng.gen_range(15, width - 10);
+    let opponent_y: i32 = rng.gen_range(15, height - 10);
+    let mut opponent = Rect::new(opponent_x, opponent_y, 10, 10);
+
+    // playing area
     let board = Rect::new(0, 0, width as u32, height as u32);
 
     // target
@@ -111,6 +152,7 @@ fn main() {
     // colours
     let black = sdl2::pixels::Color::RGB(0, 0, 0);
     let white = sdl2::pixels::Color::RGB(255, 255, 255);
+    let light_gray = sdl2::pixels::Color::RGB(200, 200, 200);
     let gray = sdl2::pixels::Color::RGB(128, 128, 128);
     let dark_gray = sdl2::pixels::Color::RGB(78, 78, 78);
 
@@ -178,8 +220,25 @@ fn main() {
                     target.x = rng.gen_range(0, width - target_size as i32);
                     target.y = rng.gen_range(0, height - target_size as i32);
                 }
-                _ => {}
+                _ => {
+                    // move opponent
+                    let current_point = opponent.top_left();
+                    opponent.reposition(
+                        next_move(current_point, height, width, 10, 10),
+                    );
+                }
             }
+        }
+
+        // check if game over
+        if target.x <= opponent.x &&
+            target.w + target.x >= opponent.x + opponent.w &&
+            target.y <= opponent.y &&
+            target.h + target.y >= opponent.y + opponent.h
+        {
+            // game over
+            log::log("Game over");
+            process::exit(1);
         }
 
         // flip colours if thing is inside the target
@@ -214,15 +273,19 @@ fn main() {
         } else {
             let _ = renderer.set_draw_color(white);
         }
+        let _ = renderer.fill_rect(target);
 
         // draw the thing
-        let _ = renderer.fill_rect(target);
         if inside == true {
             let _ = renderer.set_draw_color(white);
         } else {
             let _ = renderer.set_draw_color(black);
         }
         let _ = renderer.fill_rect(thing);
+
+        // draw the opponent
+        let _ = renderer.set_draw_color(light_gray);
+        let _ = renderer.fill_rect(opponent);
 
         // present
         let _ = renderer.present();
