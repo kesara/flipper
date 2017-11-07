@@ -11,6 +11,9 @@ to move.
 * Use <kbd>Esc</kbd> or <kbd>Q</kbd> to quit.
 * Press any other key to move the target.
 
+## Screenshot
+![Flipper](https://i.imgur.com/IjQmdg8.png)
+
 ## License
 Flipper is released under [GNU GPL v3](LICENSE)
 
