@@ -8,6 +8,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::log;
 use sdl2::rect::{Point, Rect};
+use std::path::Path;
 use std::process;
 use std::time::Duration;
 use audio_waves::waves;
@@ -61,6 +62,11 @@ fn main() {
     let video = sdl_context.video().unwrap();
     let audio = sdl_context.audio().unwrap();
     let mut event_pump = sdl_context.event_pump().unwrap();
+    let ttf_context = sdl2::ttf::init().unwrap();
+
+    // font configuration
+    let font_path = Path::new("assets/FreeSans.ttf");
+    let font = ttf_context.load_font(font_path, 128).unwrap();
 
     // main window
     let window = match video
@@ -156,139 +162,187 @@ fn main() {
     let gray = sdl2::pixels::Color::RGB(128, 128, 128);
     let dark_gray = sdl2::pixels::Color::RGB(78, 78, 78);
 
+    // game over
+    let mut game_over = false;
+
     let mut main_loop = || {
-        // events
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. } |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } |
-                Event::KeyDown { keycode: Some(Keycode::Q), .. } => {
-                    // quit
-                    log::log("Exiting flipper");
-                    process::exit(1);
-                }
-                Event::KeyDown { keycode: Some(Keycode::Left), .. } |
-                Event::KeyDown { keycode: Some(Keycode::H), .. } => {
-                    // move thing left
-                    thing.x -= 10;
-                    if thing.x < 10 {
-                        thing.x = 0;
+        if !game_over {
+            // events
+            for event in event_pump.poll_iter() {
+                match event {
+                    Event::Quit { .. } |
+                    Event::KeyDown {
+                        keycode: Some(Keycode::Escape), ..
+                    } |
+                    Event::KeyDown { keycode: Some(Keycode::Q), .. } => {
+                        // quit
+                        log::log("Exiting flipper");
+                        process::exit(1);
                     }
-                    // play sound
-                    playback_left.resume();
-                    std::thread::sleep(Duration::from_millis(200));
-                    playback_left.pause();
-                }
-                Event::KeyDown { keycode: Some(Keycode::Right), .. } |
-                Event::KeyDown { keycode: Some(Keycode::L), .. } => {
-                    // move thing right
-                    thing.x += 10;
-                    if thing.x >= width {
-                        thing.x = width - 10;
+                    Event::KeyDown { keycode: Some(Keycode::Left), .. } |
+                    Event::KeyDown { keycode: Some(Keycode::H), .. } => {
+                        // move thing left
+                        thing.x -= 10;
+                        if thing.x < 10 {
+                            thing.x = 0;
+                        }
+                        // play sound
+                        playback_left.resume();
+                        std::thread::sleep(Duration::from_millis(200));
+                        playback_left.pause();
                     }
-                    // play sound
-                    playback_right.resume();
-                    std::thread::sleep(Duration::from_millis(200));
-                    playback_right.pause();
-                }
-                Event::KeyDown { keycode: Some(Keycode::Up), .. } |
-                Event::KeyDown { keycode: Some(Keycode::K), .. } => {
-                    // move thing up
-                    thing.y -= 10;
-                    if thing.y < 0 {
-                        thing.y = 0;
+                    Event::KeyDown {
+                        keycode: Some(Keycode::Right), ..
+                    } |
+                    Event::KeyDown { keycode: Some(Keycode::L), .. } => {
+                        // move thing right
+                        thing.x += 10;
+                        if thing.x >= width {
+                            thing.x = width - 10;
+                        }
+                        // play sound
+                        playback_right.resume();
+                        std::thread::sleep(Duration::from_millis(200));
+                        playback_right.pause();
                     }
-                    // play sound
-                    playback_up.resume();
-                    std::thread::sleep(Duration::from_millis(200));
-                    playback_up.pause();
-                }
-                Event::KeyDown { keycode: Some(Keycode::Down), .. } |
-                Event::KeyDown { keycode: Some(Keycode::J), .. } => {
-                    // move thing down
-                    thing.y += 10;
-                    if thing.y >= height {
-                        thing.y = height - 10;
+                    Event::KeyDown { keycode: Some(Keycode::Up), .. } |
+                    Event::KeyDown { keycode: Some(Keycode::K), .. } => {
+                        // move thing up
+                        thing.y -= 10;
+                        if thing.y < 0 {
+                            thing.y = 0;
+                        }
+                        // play sound
+                        playback_up.resume();
+                        std::thread::sleep(Duration::from_millis(200));
+                        playback_up.pause();
                     }
-                    // play sound
-                    playback_down.resume();
-                    std::thread::sleep(Duration::from_millis(200));
-                    playback_down.pause();
+                    Event::KeyDown { keycode: Some(Keycode::Down), .. } |
+                    Event::KeyDown { keycode: Some(Keycode::J), .. } => {
+                        // move thing down
+                        thing.y += 10;
+                        if thing.y >= height {
+                            thing.y = height - 10;
+                        }
+                        // play sound
+                        playback_down.resume();
+                        std::thread::sleep(Duration::from_millis(200));
+                        playback_down.pause();
+                    }
+                    Event::KeyDown { .. } => {
+                        // change target if any other key is pressed
+                        target.x = rng.gen_range(0, width - target_size as i32);
+                        target.y =
+                            rng.gen_range(0, height - target_size as i32);
+                    }
+                    _ => {
+                        // move opponent
+                        let current_point = opponent.top_left();
+                        opponent.reposition(
+                            next_move(current_point, height, width, 10, 10),
+                        );
+                    }
                 }
-                Event::KeyDown { .. } => {
-                    // change target if any other key is pressed
-                    target.x = rng.gen_range(0, width - target_size as i32);
-                    target.y = rng.gen_range(0, height - target_size as i32);
-                }
-                _ => {
-                    // move opponent
-                    let current_point = opponent.top_left();
-                    opponent.reposition(
-                        next_move(current_point, height, width, 10, 10),
-                    );
+            }
+
+            // check if game over
+            if target.x <= opponent.x &&
+                target.w + target.x >= opponent.x + opponent.w &&
+                target.y <= opponent.y &&
+                target.h + target.y >= opponent.y + opponent.h
+            {
+                // game over
+                let text =
+                    font.render("Game Over!").blended(light_gray).unwrap();
+                let texture_creator = renderer.texture_creator();
+                let texture =
+                    texture_creator.create_texture_from_surface(&text).unwrap();
+                let _ = renderer.set_draw_color(black);
+                let _ = renderer.clear();
+                renderer.copy(&texture, None, Some(board)).unwrap();
+                renderer.present();
+                log::log("Game over");
+                game_over = true;
+            }
+        } else {
+            for event in event_pump.poll_iter() {
+                match event {
+                    Event::Quit { .. } |
+                    Event::KeyDown {
+                        keycode: Some(Keycode::Escape), ..
+                    } |
+                    Event::KeyDown { keycode: Some(Keycode::Q), .. } => {
+                        // quit
+                        log::log("Exiting flipper");
+                        process::exit(1);
+                    }
+                    Event::KeyDown {
+                        keycode: Some(Keycode::Space), ..
+                    } => {
+                        log::log("Restart flipper");
+
+                        // change target
+                        target.x = rng.gen_range(0, width - target_size as i32);
+                        target.y =
+                            rng.gen_range(0, height - target_size as i32);
+
+                        game_over = false;
+                    }
+                    _ => {}
                 }
             }
         }
+        if !(game_over) {
+            // flip colours if thing is inside the target
+            let mut inside = false;
 
-        // check if game over
-        if target.x <= opponent.x &&
-            target.w + target.x >= opponent.x + opponent.w &&
-            target.y <= opponent.y &&
-            target.h + target.y >= opponent.y + opponent.h
-        {
-            // game over
-            log::log("Game over");
-            process::exit(1);
-        }
+            if target.x <= thing.x &&
+                target.w + target.x >= thing.x + thing.w &&
+                target.y <= thing.y &&
+                target.h + target.y >= thing.y + thing.h
+            {
+                inside = true;
+            }
 
-        // flip colours if thing is inside the target
-        let mut inside = false;
-
-        if target.x <= thing.x && target.w + target.x >= thing.x + thing.w &&
-            target.y <= thing.y &&
-            target.h + target.y >= thing.y + thing.h
-        {
-            inside = true;
-        }
-
-        // draw main window
-        let _ = renderer.set_draw_color(black);
-        let _ = renderer.clear();
-
-        // draw game board
-        if inside == true {
-            let _ = renderer.set_draw_color(dark_gray);
-            // play white noise
-            playback_white_noise.resume();
-        } else {
-            let _ = renderer.set_draw_color(gray);
-            // pasue white noise
-            playback_white_noise.pause();
-        }
-        let _ = renderer.fill_rect(board);
-
-        // draw target
-        if inside == true {
+            // draw main window
             let _ = renderer.set_draw_color(black);
-        } else {
-            let _ = renderer.set_draw_color(white);
+            let _ = renderer.clear();
+
+            // draw game board
+            if inside == true {
+                let _ = renderer.set_draw_color(dark_gray);
+                // play white noise
+                playback_white_noise.resume();
+            } else {
+                let _ = renderer.set_draw_color(gray);
+                // pasue white noise
+                playback_white_noise.pause();
+            }
+            let _ = renderer.fill_rect(board);
+
+            // draw target
+            if inside == true {
+                let _ = renderer.set_draw_color(black);
+            } else {
+                let _ = renderer.set_draw_color(white);
+            }
+            let _ = renderer.fill_rect(target);
+
+            // draw the thing
+            if inside == true {
+                let _ = renderer.set_draw_color(white);
+            } else {
+                let _ = renderer.set_draw_color(black);
+            }
+            let _ = renderer.fill_rect(thing);
+
+            // draw the opponent
+            let _ = renderer.set_draw_color(light_gray);
+            let _ = renderer.fill_rect(opponent);
+
+            // present
+            let _ = renderer.present();
         }
-        let _ = renderer.fill_rect(target);
-
-        // draw the thing
-        if inside == true {
-            let _ = renderer.set_draw_color(white);
-        } else {
-            let _ = renderer.set_draw_color(black);
-        }
-        let _ = renderer.fill_rect(thing);
-
-        // draw the opponent
-        let _ = renderer.set_draw_color(light_gray);
-        let _ = renderer.fill_rect(opponent);
-
-        // present
-        let _ = renderer.present();
     };
 
     loop {

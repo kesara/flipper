@@ -5,5 +5,9 @@ authors = ["Kesara Rathnayake <kesara@fq.nz>"]
 license = "GPL-3.0"
 
 [dependencies]
-sdl2 = "0.30"
 rand = "0.3"
+
+[dependencies.sdl2]
+version = "0.30"
+default-features = false
+features = ["ttf"]
