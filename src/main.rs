@@ -87,7 +87,7 @@ fn main() {
     // audio
     let spec_vertical = waves::get_audio_spec(44100);
     let spec_horizontal = waves::get_audio_spec(43100);
-    let spec_white_noise = waves::get_audio_spec(42100);
+    let spec_white_noise = waves::get_audio_spec(43000);
 
     let playback_left = audio
         .open_playback(None, &spec_horizontal, |spec| {
